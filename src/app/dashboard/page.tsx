@@ -50,7 +50,7 @@ export default function SPCAnalysisPage() {
 
       // Filter data by selected shifts
       const filteredData = inspectionData.filter((data) =>
-        formData.selectedShifts.includes(data.ShiftCode)
+        formData.selectedShifts.includes(Number(data.ShiftCode))
       );
 
       if (filteredData.length === 0) {
