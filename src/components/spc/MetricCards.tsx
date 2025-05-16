@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ProcessMetrics } from "@/types/spc";
+import { Metrics } from "@/types";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -8,7 +8,7 @@ const fadeIn = {
   transition: { duration: 0.3 }
 };
 
-export function MetricCard({ metrics }: { metrics: ProcessMetrics }) {
+export function MetricCard({ metrics }: { metrics: Metrics }) {
   return (
     <motion.div {...fadeIn}>
       <Card className="mt-4">

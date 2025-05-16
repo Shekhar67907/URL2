@@ -1,7 +1,8 @@
-// src/types.ts
+// Consolidate all types here
+import { format } from "date-fns";
 
 export interface FormState {
-  selectedShifts: string[];  // Changed from string[] to match ShiftData
+  selectedShifts: number[];
   material: string;
   operation: string;
   gauge: string;
@@ -10,28 +11,28 @@ export interface FormState {
   endDate: Date;
 }
 
-export interface Shift {
-  ShiftId: string;  // Changed from string to match API response
+export interface ShiftData {
+  ShiftId: number;
   ShiftName: string;
 }
 
-export interface Material {
+export interface MaterialData {
   MaterialCode: string;
   MaterialName: string;
 }
 
-export interface Operation {
+export interface OperationData {
   OperationCode: string;
   OperationName: string;
 }
 
-export interface Gauge {
+export interface GuageData {
   GuageCode: string;
   GuageName: string;
 }
 
 export interface InspectionData {
-  ShiftCode: string;  // Changed from string to match API response
+  ShiftCode: string;
   ActualSpecification: string;
   FromSpecification: string;
   ToSpecification: string;
@@ -43,11 +44,12 @@ export interface ChartPoint {
 }
 
 export interface DistributionData {
-  data: { x: number; y: number }[];
+  data: ChartPoint[];
   stats: {
     min: number;
     max: number;
     mean: number;
+    stdDev: number;
     target: number;
     binEdges: number[];
   };
@@ -107,21 +109,8 @@ export interface ProcessInterpretation {
 
 export interface AnalysisData {
   metrics: Metrics;
-  controlCharts: {
-    xBarData: { x: number; y: number }[];
-    rangeData: { x: number; y: number }[];
-    limits: ControlChartLimits;
-  };
-  distribution: {
-    data: { x: number; y: number }[];
-    stats: {
-      min: number;
-      max: number;
-      mean: number;
-      target: number;
-      binEdges: number[];
-    };
-  };
+  controlCharts: ControlCharts;
+  distribution: DistributionData;
   ssAnalysis: SSAnalysis;
   processInterpretation: ProcessInterpretation;
 }

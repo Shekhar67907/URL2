@@ -80,7 +80,7 @@ export function ControlCharts({ chartData }: { chartData: ControlChartData }) {
 
 export function Histogram({ data, stats, lsl, usl }: {
   data: Array<{x: number; y: number}>;
-  stats: {mean: number; stdDev: number; target: number};
+  stats: {mean: number; stdDev?: number; target: number};
   lsl: number;
   usl: number;
 }) {

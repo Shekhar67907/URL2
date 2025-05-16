@@ -10,7 +10,7 @@ import {
 interface UseSPCDataParams {
   startDate: Date;
   endDate: Date;
-  selectedShifts: string[];
+  selectedShifts: number[];
   material: string;
   operation: string;
 }

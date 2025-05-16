@@ -76,7 +76,7 @@ export default function AnalysisForm({
   });
 
   // Event handlers
-  const handleShiftToggle = (shiftId: string) => {
+  const handleShiftToggle = (shiftId: number) => {
     const updatedShifts = formState.selectedShifts.includes(shiftId)
       ? formState.selectedShifts.filter((id) => id !== shiftId)
       : [...formState.selectedShifts, shiftId];

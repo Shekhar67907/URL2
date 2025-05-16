@@ -3,19 +3,17 @@
 import { useState, useEffect } from "react";
 import { subDays } from "date-fns";
 import { 
- 
   ControlCharts,
   Histogram,
   AnalysisCards
 } from "@/components/spc/ChartComponent";
 import { useSPCData } from "@/hooks/useSPCdata";
-import { analyzeData } from "@/lib/spcAnalysis";
-import { AnalysisData } from "@/types/spc";
+import { analyzeData } from "@/lib/spcUtils";
+import { AnalysisData } from "@/types";
 import { ControlPanel } from "@/components/spc/ControlPanel";
 import { MetricCard } from "@/components/spc/MetricCards";
 
 export default function SPCDashboardPage() {
-  // Analysis parameters state
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 7));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [selectedShifts, setSelectedShifts] = useState<number[]>([]);
@@ -23,13 +21,11 @@ export default function SPCDashboardPage() {
   const [operation, setOperation] = useState<string>("");
   const [gauge, setGauge] = useState<string>("");
   
-  // Analysis state
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [downloading, setDownloading] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
-  // Fetch data using the hook
   const { shifts, materials, operations, gauges, error: dataError } = useSPCData({
     startDate,
     endDate,
@@ -38,14 +34,12 @@ export default function SPCDashboardPage() {
     operation
   });
 
-  // Initialize selected shifts when shifts are loaded
   useEffect(() => {
     if (shifts.length > 0 && selectedShifts.length === 0) {
-      setSelectedShifts(shifts.map(shift => shift.ShiftId));
+      setSelectedShifts(shifts.map(shift => Number(shift.ShiftId)));
     }
   }, [shifts, selectedShifts]);
 
-  // Handle shift toggle
   const handleShiftToggle = (shiftId: number) => {
     setSelectedShifts(prev => 
       prev.includes(shiftId)
@@ -54,7 +48,6 @@ export default function SPCDashboardPage() {
     );
   };
 
-  // Run analysis
   const handleAnalyze = async () => {
     if (!material || !operation || !gauge) {
       setAnalysisError("Please select all required parameters");
@@ -88,12 +81,10 @@ export default function SPCDashboardPage() {
     }
   };
 
-
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-6">Statistical Process Control Dashboard</h1>
       
-      {/* Control Panel */}
       <ControlPanel
         startDate={startDate}
         endDate={endDate}
@@ -118,26 +109,17 @@ export default function SPCDashboardPage() {
         onAnalyze={handleAnalyze}
       />
       
-      {/* Analysis Results */}
       {analysisData && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Analysis Results</h2>
-          
-          {/* Metrics Card */}
           <MetricCard metrics={analysisData.metrics} />
-          
-          {/* Control Charts */}
           <ControlCharts chartData={analysisData.controlCharts} />
-          
-          {/* Histogram */}
           <Histogram 
             data={analysisData.distribution.data}
             stats={analysisData.distribution.stats}
             lsl={analysisData.metrics.lsl}
             usl={analysisData.metrics.usl}
           />
-          
-          {/* Analysis Cards */}
           <AnalysisCards 
             ssAnalysis={analysisData.ssAnalysis}
             processInterpretation={analysisData.processInterpretation}

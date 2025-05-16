@@ -1,4 +1,11 @@
-import { InspectionData, AnalysisData } from "@/types";
+import { format } from 'date-fns';
+import { 
+  InspectionData, 
+  AnalysisData,
+  Metrics,
+  SSAnalysis,
+  ProcessInterpretation
+} from '@/types';
 
 // Control chart constants for sample sizes 1 to 5 as provided
 const controlChartConstants: {
@@ -138,6 +145,7 @@ function calculateDistributionData(
       min,
       max,
       mean: calculateMean(data) ?? 0,
+      stdDev: calculateStdDev(data) ?? 0,
       target: (usl + lsl) / 2,
       binEdges,
     },
@@ -299,7 +307,7 @@ export function calculateAnalysisData(
   // Calculate distribution data
   const distribution = calculateDistributionData(measurements, lsl, usl) ?? {
     data: [],
-    stats: { min: 0, max: 0, mean: 0, target: (usl + lsl) / 2, binEdges: [] },
+    stats: { min: 0, max: 0, mean: 0, stdDev: 0, target: (usl + lsl) / 2, binEdges: [] },
   };
 
   // Analyze for special causes
@@ -401,4 +409,42 @@ export function calculateAnalysisData(
       processShift: hasEightConsecutive ? "Present" : "Not Detected",
     },
   };
+}
+
+export async function analyzeData({
+  startDate,
+  endDate,
+  selectedShifts,
+  material,
+  operation,
+  gauge
+}: {
+  startDate: Date;
+  endDate: Date;
+  selectedShifts: number[];
+  material: string;
+  operation: string;
+  gauge: string;
+}): Promise<AnalysisData | null> {
+  try {
+    const params = new URLSearchParams({
+      FromDate: format(startDate, "dd/MM/yyyy"),
+      ToDate: format(endDate, "dd/MM/yyyy"),
+      MaterialCode: material,
+      OperationCode: operation,
+      GuageCode: gauge,
+      ShiftId: selectedShifts.join(',')
+    });
+
+    const response = await fetch(`/api/pirinspectiondata?${params}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch inspection data');
+    }
+
+    const inspectionData: InspectionData[] = await response.json();
+    return calculateAnalysisData(inspectionData);
+  } catch (error) {
+    console.error('Analysis failed:', error);
+    return null;
+  }
 }
