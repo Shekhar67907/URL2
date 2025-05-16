@@ -1,51 +1,46 @@
-// app/api/materials/route.ts
 import { NextResponse } from "next/server";
+import axios from "axios";
 
-export async function GET() {
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.1.7:8304";
+
+export async function GET(request: Request) {
   try {
-    // Sample JSON object mimicking the material list API response
-    const sampleMaterialData = [
-        {
-            "TrnNo": 0,
-            "TrnDate": null,
-            "TrnSubType": 0,
-            "DocType": null,
-            "StatusCode": 0,
-            "CrtBy": null,
-            "AssetCode": 0,
-            "MaterialCode": 1010110569,
-            "OperationCode": 0,
-            "MaterialName": "TURBO ADAPTOR DV0.0.32.101.0.PR",
-            "JobNo": 0,
-            "JobNoString": null,
-            "ShortTrnNo": null,
-            "OperationName": null,
-            "FirstPieceApprovals": null,
-            "ProcessInpections": null,
-            "AssetName": null,
-            "ChgBy": null,
-            "ShiftCode": 0,
-            "ShiftName": null,
-            "JobStatus": 0,
-            "PirType": 0,
-            "ReasonCode": 0,
-            "ReasonName": null,
-            "StringTrnNo": null,
-            "GuageCode": 0,
-            "GuageName": null,
-            "FromSpecification": null,
-            "ToSpecification": null,
-            "ActualSpecification": null,
-            "JobDate": null
-        },
-        
-    ]
+    const url = new URL(request.url);
+    const fromDate = url.searchParams.get('FromDate');
+    const toDate = url.searchParams.get('ToDate');
+    const shiftId = url.searchParams.get('ShiftId');
 
-    return NextResponse.json(sampleMaterialData, { status: 200 });
+    if (!fromDate || !toDate || !shiftId) {
+      return NextResponse.json(
+        { error: "Missing required parameters" },
+        { status: 400 }
+      );
+    }
+
+    const response = await axios.get(
+      `${BASE_URL}/api/productionappservices/getspcmateriallist`,
+      {
+        params: {
+          FromDate: fromDate,
+          ToDate: toDate,
+          ShiftId: shiftId
+        }
+      }
+    );
+
+    return NextResponse.json(response.data);
   } catch (error) {
-    console.error("Error returning sample material list:", error);
+    console.error("Error fetching material list:", error);
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        return NextResponse.json(
+          { error: error.response.data?.message || error.message },
+          { status: error.response.status }
+        );
+      }
+    }
     return NextResponse.json(
-      { error: "Failed to return sample material list" },
+      { error: "Failed to fetch material list" },
       { status: 500 }
     );
   }

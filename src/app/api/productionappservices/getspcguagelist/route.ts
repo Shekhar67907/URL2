@@ -1,160 +1,50 @@
-// app/api/gauge/route.ts
 import { NextResponse } from "next/server";
+import axios from "axios";
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.1.7:8304";
 
 export async function GET(request: Request) {
   try {
-    // Parse URL parameters
     const url = new URL(request.url);
-    const fromDate = url.searchParams.get('fromDate');
-    const toDate = url.searchParams.get('toDate');
-    const materialCode = url.searchParams.get('materialCode');
-    const operationCode = url.searchParams.get('operationCode');
+    const fromDate = url.searchParams.get('FromDate');
+    const toDate = url.searchParams.get('ToDate');
+    const materialCode = url.searchParams.get('MaterialCode');
+    const operationCode = url.searchParams.get('OperationCode');
+    const shiftId = url.searchParams.get('ShiftId');
 
-    // Log the parameters that would be used in a real API call
-    console.log(`Would call: http://10.10.1.7:8304/api/productionappservices/getguagelist?FromDate=${fromDate}&ToDate=${toDate}&MaterialCode=${materialCode}&OperationCode=${operationCode}`);
+    if (!fromDate || !toDate || !materialCode || !operationCode || !shiftId) {
+      return NextResponse.json(
+        { error: "Missing required parameters" },
+        { status: 400 }
+      );
+    }
 
-    // Sample JSON object mimicking the gauge list API response
-    const sampleGaugeData = [
-        {
-            "TrnNo": 0,
-            "TrnDate": null,
-            "TrnSubType": 0,
-            "DocType": null,
-            "StatusCode": 0,
-            "CrtBy": null,
-            "AssetCode": 0,
-            "MaterialCode": 0,
-            "OperationCode": 0,
-            "MaterialName": null,
-            "JobNo": 0,
-            "JobNoString": null,
-            "ShortTrnNo": null,
-            "OperationName": null,
-            "FirstPieceApprovals": null,
-            "ProcessInpections": null,
-            "AssetName": null,
-            "ChgBy": null,
-            "ShiftCode": 0,
-            "ShiftName": null,
-            "JobStatus": 0,
-            "PirType": 0,
-            "ReasonCode": 0,
-            "ReasonName": null,
-            "StringTrnNo": null,
-            "GuageCode": 1011100823,
-            "GuageName": "THREAD PLUG GAUGE-M10X1.5 -6H",
-            "FromSpecification": null,
-            "ToSpecification": null,
-            "ActualSpecification": null,
-            "JobDate": null
-        },
-        {
-            "TrnNo": 0,
-            "TrnDate": null,
-            "TrnSubType": 0,
-            "DocType": null,
-            "StatusCode": 0,
-            "CrtBy": null,
-            "AssetCode": 0,
-            "MaterialCode": 0,
-            "OperationCode": 0,
-            "MaterialName": null,
-            "JobNo": 0,
-            "JobNoString": null,
-            "ShortTrnNo": null,
-            "OperationName": null,
-            "FirstPieceApprovals": null,
-            "ProcessInpections": null,
-            "AssetName": null,
-            "ChgBy": null,
-            "ShiftCode": 0,
-            "ShiftName": null,
-            "JobStatus": 0,
-            "PirType": 0,
-            "ReasonCode": 0,
-            "ReasonName": null,
-            "StringTrnNo": null,
-            "GuageCode": 1011100967,
-            "GuageName": "THREAD PLUG GAUGE M8X1.25 6H",
-            "FromSpecification": null,
-            "ToSpecification": null,
-            "ActualSpecification": null,
-            "JobDate": null
-        },
-        {
-            "TrnNo": 0,
-            "TrnDate": null,
-            "TrnSubType": 0,
-            "DocType": null,
-            "StatusCode": 0,
-            "CrtBy": null,
-            "AssetCode": 0,
-            "MaterialCode": 0,
-            "OperationCode": 0,
-            "MaterialName": null,
-            "JobNo": 0,
-            "JobNoString": null,
-            "ShortTrnNo": null,
-            "OperationName": null,
-            "FirstPieceApprovals": null,
-            "ProcessInpections": null,
-            "AssetName": null,
-            "ChgBy": null,
-            "ShiftCode": 0,
-            "ShiftName": null,
-            "JobStatus": 0,
-            "PirType": 0,
-            "ReasonCode": 0,
-            "ReasonName": null,
-            "StringTrnNo": null,
-            "GuageCode": 1011101033,
-            "GuageName": "THREAD RING GAUGE-M10X1.5 6g",
-            "FromSpecification": null,
-            "ToSpecification": null,
-            "ActualSpecification": null,
-            "JobDate": null
-        },
-        {
-            "TrnNo": 0,
-            "TrnDate": null,
-            "TrnSubType": 0,
-            "DocType": null,
-            "StatusCode": 0,
-            "CrtBy": null,
-            "AssetCode": 0,
-            "MaterialCode": 0,
-            "OperationCode": 0,
-            "MaterialName": null,
-            "JobNo": 0,
-            "JobNoString": null,
-            "ShortTrnNo": null,
-            "OperationName": null,
-            "FirstPieceApprovals": null,
-            "ProcessInpections": null,
-            "AssetName": null,
-            "ChgBy": null,
-            "ShiftCode": 0,
-            "ShiftName": null,
-            "JobStatus": 0,
-            "PirType": 0,
-            "ReasonCode": 0,
-            "ReasonName": null,
-            "StringTrnNo": null,
-            "GuageCode": 1011101199,
-            "GuageName": "PLUG GAUGE-M12X1.75 6H",
-            "FromSpecification": null,
-            "ToSpecification": null,
-            "ActualSpecification": null,
-            "JobDate": null
+    const response = await axios.get(
+      `${BASE_URL}/api/productionappservices/getspcguagelist`,
+      {
+        params: {
+          FromDate: fromDate,
+          ToDate: toDate,
+          MaterialCode: materialCode,
+          OperationCode: operationCode,
+          ShiftId: shiftId
         }
-    ]
-    
+      }
+    );
 
-    return NextResponse.json(sampleGaugeData, { status: 200 });
+    return NextResponse.json(response.data);
   } catch (error) {
-    console.error("Error returning sample gauge list:", error);
+    console.error("Error fetching gauge list:", error);
+    if (axios.isAxiosError(error)) {
+      if (error.response) {
+        return NextResponse.json(
+          { error: error.response.data?.message || error.message },
+          { status: error.response.status }
+        );
+      }
+    }
     return NextResponse.json(
-      { error: "Failed to return sample gauge list" },
+      { error: "Failed to fetch gauge list" },
       { status: 500 }
     );
   }
