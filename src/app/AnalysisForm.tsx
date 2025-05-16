@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -27,7 +27,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Search, Filter, Loader2 } from "lucide-react";
-import { FormState, Shift, Material, Operation, Gauge, InspectionData } from "@/types";
+import { FormState } from "@/types";
+import { useSPCData } from "@/hooks/useSPCdata";
 
 // Sample sizes with corresponding control chart constants
 const sampleSizes = [
@@ -53,195 +54,26 @@ export default function AnalysisForm({
   loading,
   error,
 }: AnalysisFormProps) {
-  // Local state for data and loading states
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [operations, setOperations] = useState<Operation[]>([]);
-  const [gauges, setGauges] = useState<Gauge[]>([]);
-  const [inspectionData, setInspectionData] = useState<InspectionData[]>([]);
-  const [isLoadingShifts, setIsLoadingShifts] = useState(false);
-  const [isLoadingMaterials, setIsLoadingMaterials] = useState(false);
-  const [isLoadingOperations, setIsLoadingOperations] = useState(false);
-  const [isLoadingGauges, setIsLoadingGauges] = useState(false);
-  const [isLoadingInspectionData, setIsLoadingInspectionData] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-   const BASE_URL = "http://10.10.1.7:8304";
-
-  // Fetch data from APIs
-  useEffect(() => {
-    // Fetch shifts
-    const fetchShifts = async () => {
-      setIsLoadingShifts(true);
-      try {
-        const response = await fetch(`${BASE_URL}/api/commonappservices/getshiftdatalist`);
-        if (!response.ok) throw new Error("Failed to fetch shifts");
-        const data: { success: boolean; data: Shift[]; message?: string } = await response.json();
-        if (data.success) {
-          setShifts(data.data);
-        } else {
-          throw new Error(data.message || "Failed to fetch shifts");
-        }
-      } catch (err) {
-        setFetchError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setIsLoadingShifts(false);
-      }
-    };
-
-    // Fetch materials
-    const fetchMaterials = async () => {
-      if (!formState.startDate || !formState.endDate || !formState.selectedShifts.length) {
-        setMaterials([]);
-        return;
-      }
-
-      setIsLoadingMaterials(true);
-      try {
-        const params = new URLSearchParams({
-          FromDate: format(formState.startDate, "dd/MM/yyyy"),
-          ToDate: format(formState.endDate, "dd/MM/yyyy"),
-          ShiftId: formState.selectedShifts.join(","), // 👈 comma-separated
-        });
-
-        const response = await fetch(
-          `${BASE_URL}/api/productionappservices/getspcmateriallist?${params}`,
-          {
-            method: "GET",
-            // headers: { "Content-Type": "application/json" },   
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch materials");
-        const data: Material[] = await response.json();
-        setMaterials(data);
-      } catch (err) {
-        setFetchError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setIsLoadingMaterials(false);
-      }
-    };
-
-
-    // Fetch operations
-    const fetchOperations = async () => {
-      if (!formState.material || !formState.startDate || !formState.endDate || !formState.selectedShifts.length) {
-        setOperations([]);
-        return;
-      }
-      setIsLoadingOperations(true);
-      try {
-        const params = new URLSearchParams({
-          FromDate: format(formState.startDate, "dd/MM/yyyy"),
-          ToDate: format(formState.endDate, "dd/MM/yyyy"),
-          MaterialCode: formState.material,
-          ShiftId: formState.selectedShifts.join(","), // 👈 comma-separated
-        });
-        const response = await fetch(
-          `${BASE_URL}/api/productionappservices/getspcoperationlist?${params}`,
-          {
-            method: "GET",
-            // headers: { "Content-Type": "application/json" },
-            // body: JSON.stringify(formState.selectedShifts),
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch operations");
-        const data: Operation[] = await response.json();
-        setOperations(data);
-      } catch (err) {
-        setFetchError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setIsLoadingOperations(false);
-      }
-    };
-
-    // Fetch gauges
-    const fetchGauges = async () => {
-      if (!formState.material || !formState.operation || !formState.startDate || !formState.endDate || !formState.selectedShifts.length) {
-        setGauges([]);
-        return;
-      }
-      setIsLoadingGauges(true);
-      try {
-        const params = new URLSearchParams({
-          FromDate: format(formState.startDate, "dd/MM/yyyy"),
-          ToDate: format(formState.endDate, "dd/MM/yyyy"),
-          MaterialCode: formState.material,
-          OperationCode: formState.operation,
-          ShiftId: formState.selectedShifts.join(","), // 👈 comma-separated
-        });
-        const response = await fetch(
-          `${BASE_URL}/api/productionappservices/getspcguagelist?${params}`,
-          {
-            method: "GET",
-            // headers: { "Content-Type": "application/json" },
-            // body: JSON.stringify(formState.selectedShifts),
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch gauges");
-        const data: Gauge[] = await response.json();
-        setGauges(data);
-      } catch (err) {
-        setFetchError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setIsLoadingGauges(false);
-      }
-    };
-
-    // Fetch inspection data
-    const fetchInspectionData = async () => {
-      if (
-        !formState.selectedShifts.length ||
-        !formState.material ||
-        !formState.operation ||
-        !formState.gauge ||
-        !formState.startDate ||
-        !formState.endDate
-      ) {
-        setInspectionData([]);
-        return;
-      }
-      setIsLoadingInspectionData(true);
-      try {
-        const params = new URLSearchParams({
-          FromDate: format(formState.startDate, "dd/MM/yyyy"),
-          ToDate: format(formState.endDate, "dd/MM/yyyy"),
-          MaterialCode: formState.material,
-          OperationCode: formState.operation,
-          GuageCode: formState.gauge,
-          ShiftId: formState.selectedShifts.join(","), // 👈 comma-separated
-        });
-        const response = await fetch(
-          `${BASE_URL}/api/productionappservices/getspcpirinspectiondatalist?${params}`,
-          {
-            method: "GET",
-            // headers: { "Content-Type": "application/json" },
-            // body: JSON.stringify(formState.selectedShifts),
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch inspection data");
-        const data: InspectionData[] = await response.json();
-        setInspectionData(data);
-      } catch (err) {
-        setFetchError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setIsLoadingInspectionData(false);
-      }
-    };
-
-    fetchShifts();
-    fetchMaterials();
-    fetchOperations();
-    fetchGauges();
-    fetchInspectionData();
-  }, [
-    formState.selectedShifts,
-    formState.material,
-    formState.operation,
-    formState.gauge,
-    formState.startDate,
-    formState.endDate,
-  ]);
+  // Use the consolidated hook for data fetching
+  const {
+    shifts,
+    materials,
+    operations,
+    gauges,
+    error: fetchError,
+    isLoading: {
+      shifts: isLoadingShifts,
+      materials: isLoadingMaterials,
+      operations: isLoadingOperations,
+      gauges: isLoadingGauges
+    }
+  } = useSPCData({
+    startDate: formState.startDate,
+    endDate: formState.endDate,
+    selectedShifts: formState.selectedShifts,
+    material: formState.material,
+    operation: formState.operation
+  });
 
   // Event handlers
   const handleShiftToggle = (shiftId: string) => {
@@ -274,10 +106,9 @@ export default function AnalysisForm({
 
   const handleSubmit = () => {
     try {
-      // Trigger analysis with current form state
       onAnalyze(formState);
     } catch (err) {
-      setFetchError(err instanceof Error ? err.message : "Unknown error");
+      console.error(err);
     }
   };
 
@@ -311,9 +142,7 @@ export default function AnalysisForm({
     formState.material &&
     formState.operation &&
     formState.gauge &&
-    formState.sampleSize &&
-    inspectionData.length >= parseInt(formState.sampleSize) &&
-    !isLoadingInspectionData;
+    formState.sampleSize;
 
   return (
     <motion.div
@@ -509,7 +338,7 @@ export default function AnalysisForm({
                 onClick={handleSubmit}
                 disabled={loading || !formIsValid}
               >
-                {loading || isLoadingInspectionData ? (
+                {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Analyzing...

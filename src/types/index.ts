@@ -1,7 +1,7 @@
 // src/types.ts
 
 export interface FormState {
-  selectedShifts: string[];
+  selectedShifts: string[];  // Changed from string[] to match ShiftData
   material: string;
   operation: string;
   gauge: string;
@@ -11,7 +11,7 @@ export interface FormState {
 }
 
 export interface Shift {
-  ShiftId: string;
+  ShiftId: string;  // Changed from string to match API response
   ShiftName: string;
 }
 
@@ -26,12 +26,12 @@ export interface Operation {
 }
 
 export interface Gauge {
-  GuageCode: string; // Note: Typo in "Guage" (should be "Gauge"), retained for consistency
+  GuageCode: string;
   GuageName: string;
 }
 
 export interface InspectionData {
-  ShiftCode: string;
+  ShiftCode: string;  // Changed from string to match API response
   ActualSpecification: string;
   FromSpecification: string;
   ToSpecification: string;
@@ -60,6 +60,7 @@ export interface ControlChartLimits {
   rangeUcl: number;
   rangeMean: number;
   rangeLcl: number;
+  Agostinho: number;
 }
 
 export interface ControlCharts {
@@ -74,12 +75,12 @@ export interface Metrics {
   stdDevWithin: number;
   avgRange: number;
   cp: number;
-  cpu: number; // Added for upper process capability
-  cpl: number; // Added for lower process capability
+  cpu: number;
+  cpl: number;
   cpk: number;
   pp: number;
-  ppu: number; // Added for upper preliminary process capability
-  ppl: number; // Added for lower preliminary process capability
+  ppu: number;
+  ppl: number;
   ppk: number;
   lsl: number;
   usl: number;
@@ -91,13 +92,13 @@ export interface SSAnalysis {
   rangePointsOutsideLimits: string;
   eightConsecutivePoints: string;
   sixConsecutiveTrend: string;
-  processShift: string; // Added to match ssAnalysis in AnalysisData
-  processSpread: string; // Added to match ssAnalysis in AnalysisData
-  specialCausePresent: string; // Added to match ssAnalysis in AnalysisData
+  processShift: string;
+  processSpread: string;
+  specialCausePresent: string;
 }
 
 export interface ProcessInterpretation {
-  decisionRemark: string; // Added to match processInterpretation in AnalysisData
+  decisionRemark: string;
   processPotential: string;
   processPerformance: string;
   processStability: string;
@@ -105,19 +106,11 @@ export interface ProcessInterpretation {
 }
 
 export interface AnalysisData {
-  metrics: Metrics; // Updated to reference the Metrics interface
+  metrics: Metrics;
   controlCharts: {
     xBarData: { x: number; y: number }[];
     rangeData: { x: number; y: number }[];
-    limits: {
-      xBarUcl: number;
-      xBarMean: number;
-      xBarLcl: number;
-      Agostinho: number;
-      rangeUcl: number;
-      rangeMean: number;
-      rangeLcl: number;
-    };
+    limits: ControlChartLimits;
   };
   distribution: {
     data: { x: number; y: number }[];
@@ -129,20 +122,6 @@ export interface AnalysisData {
       binEdges: number[];
     };
   };
-  ssAnalysis: {
-    processShift: string;
-    processSpread: string;
-    specialCausePresent: string;
-    pointsOutsideLimits: string;
-    rangePointsOutsideLimits: string;
-    eightConsecutivePoints: string;
-    sixConsecutiveTrend: string;
-  };
-  processInterpretation: {
-    decisionRemark: string;
-    processPotential: string;
-    processPerformance: string;
-    processStability: string;
-    processShift: string;
-  };
+  ssAnalysis: SSAnalysis;
+  processInterpretation: ProcessInterpretation;
 }

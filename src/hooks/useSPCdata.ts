@@ -10,9 +10,16 @@ import {
 interface UseSPCDataParams {
   startDate: Date;
   endDate: Date;
-  selectedShifts: number[];
+  selectedShifts: string[];
   material: string;
   operation: string;
+}
+
+interface LoadingState {
+  shifts: boolean;
+  materials: boolean;
+  operations: boolean;
+  gauges: boolean;
 }
 
 export function useSPCData({ 
@@ -27,10 +34,17 @@ export function useSPCData({
   const [operations, setOperations] = useState<OperationData[]>([]);
   const [gauges, setGauges] = useState<GuageData[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<LoadingState>({
+    shifts: false,
+    materials: false,
+    operations: false,
+    gauges: false
+  });
 
   // Fetch shifts
   useEffect(() => {
     const fetchShifts = async () => {
+      setIsLoading(prev => ({ ...prev, shifts: true }));
       try {
         const response = await fetch('/api/commonappservices/getshiftdatalist');
         if (!response.ok) throw new Error('Failed to fetch shifts');
@@ -40,6 +54,8 @@ export function useSPCData({
       } catch (err) {
         setError('Failed to load shifts');
         console.error(err);
+      } finally {
+        setIsLoading(prev => ({ ...prev, shifts: false }));
       }
     };
     fetchShifts();
@@ -48,8 +64,12 @@ export function useSPCData({
   // Fetch materials
   useEffect(() => {
     const fetchMaterials = async () => {
-      if (!startDate || !endDate || selectedShifts.length === 0) return;
+      if (!startDate || !endDate || selectedShifts.length === 0) {
+        setMaterials([]);
+        return;
+      }
       
+      setIsLoading(prev => ({ ...prev, materials: true }));
       try {
         const params = new URLSearchParams({
           FromDate: format(startDate, 'dd/MM/yyyy'),
@@ -65,6 +85,8 @@ export function useSPCData({
       } catch (err) {
         setError('Failed to load materials');
         console.error(err);
+      } finally {
+        setIsLoading(prev => ({ ...prev, materials: false }));
       }
     };
     fetchMaterials();
@@ -78,6 +100,7 @@ export function useSPCData({
         return;
       }
 
+      setIsLoading(prev => ({ ...prev, operations: true }));
       try {
         const params = new URLSearchParams({
           FromDate: format(startDate, 'dd/MM/yyyy'),
@@ -94,6 +117,8 @@ export function useSPCData({
       } catch (err) {
         setError('Failed to load operations');
         console.error(err);
+      } finally {
+        setIsLoading(prev => ({ ...prev, operations: false }));
       }
     };
     fetchOperations();
@@ -107,6 +132,7 @@ export function useSPCData({
         return;
       }
 
+      setIsLoading(prev => ({ ...prev, gauges: true }));
       try {
         const params = new URLSearchParams({
           FromDate: format(startDate, 'dd/MM/yyyy'),
@@ -124,6 +150,8 @@ export function useSPCData({
       } catch (err) {
         setError('Failed to load gauges');
         console.error(err);
+      } finally {
+        setIsLoading(prev => ({ ...prev, gauges: false }));
       }
     };
     fetchGauges();
@@ -134,6 +162,7 @@ export function useSPCData({
     materials,
     operations,
     gauges,
-    error
+    error,
+    isLoading
   };
 }
