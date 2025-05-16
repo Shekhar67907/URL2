@@ -5,7 +5,7 @@ import { addDays, format } from "date-fns";
 import AnalysisForm from "./AnalysisForm";
 import { useReactToPrint } from 'react-to-print';
 import AnalysisResults from "./AnalysisResults";
-import { calculateAnalysisData } from "./spcUtils";
+import { calculateAnalysisData } from "../lib/spcUtils";
 import { FormState, InspectionData, AnalysisData } from "@/types";
 
 
