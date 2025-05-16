@@ -9,11 +9,9 @@ export async function GET(request: Request) {
     const fromDate = url.searchParams.get('FromDate');
     const toDate = url.searchParams.get('ToDate');
     const materialCode = url.searchParams.get('MaterialCode');
-    const operationCode = url.searchParams.get('OperationCode');
-    const gaugeCode = url.searchParams.get('GuageCode');
     const shiftId = url.searchParams.get('ShiftId');
 
-    if (!fromDate || !toDate || !materialCode || !operationCode || !gaugeCode || !shiftId) {
+    if (!fromDate || !toDate || !materialCode || !shiftId) {
       return NextResponse.json(
         { error: "Missing required parameters" },
         { status: 400 }
@@ -21,14 +19,12 @@ export async function GET(request: Request) {
     }
 
     const response = await axios.get(
-      `${BASE_URL}/api/productionappservices/getspcpirinspectiondatalist`,
+      `${BASE_URL}/api/productionappservices/getspcoperationlist`,
       {
         params: {
           FromDate: fromDate,
           ToDate: toDate,
           MaterialCode: materialCode,
-          OperationCode: operationCode,
-          GuageCode: gaugeCode,
           ShiftId: shiftId
         }
       }
@@ -36,7 +32,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response.data);
   } catch (error) {
-    console.error("Error fetching PIR inspection data:", error);
+    console.error("Error fetching operation list:", error);
     if (axios.isAxiosError(error)) {
       if (error.response) {
         return NextResponse.json(
@@ -46,8 +42,8 @@ export async function GET(request: Request) {
       }
     }
     return NextResponse.json(
-      { error: "Failed to fetch PIR inspection data" },
+      { error: "Failed to fetch operation list" },
       { status: 500 }
     );
   }
-}
+} 
