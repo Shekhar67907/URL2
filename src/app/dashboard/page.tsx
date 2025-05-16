@@ -36,11 +36,12 @@ export default function SPCAnalysisPage() {
     try {
       // Fetch inspection data from API
       const params = new URLSearchParams({
-        FromDate: format(formData.startDate, "yyyy-MM-dd"),
-        ToDate: format(formData.endDate, "yyyy-MM-dd"),
+        FromDate: format(formData.startDate, "dd/MM/yyyy"),
+        ToDate: format(formData.endDate, "dd/MM/yyyy"),
         MaterialCode: formData.material,
         OperationCode: formData.operation,
         GuageCode: formData.gauge,
+        ShiftId: formData.selectedShifts.join(',')
       });
       const response = await fetch(`/api/pirinspectiondata?${params}`);
       if (!response.ok) {
